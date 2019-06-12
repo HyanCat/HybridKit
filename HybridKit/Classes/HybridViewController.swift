@@ -56,18 +56,18 @@ open class HybridViewController: UIViewController, UIScrollViewDelegate, WKUIDel
 
     // MARK: - WKWebView Delegates
 
-    private func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+    public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         if preferWebTitle {
             self.title = webView.title
         }
         print("Hybrid: finished")
     }
 
-    private func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+    public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
         print("Hybrid: failed")
     }
 
-    private func scrollViewDidScroll(_ scrollView: UIScrollView) {
+    public func scrollViewDidScroll(_ scrollView: UIScrollView) {
         //
     }
 }

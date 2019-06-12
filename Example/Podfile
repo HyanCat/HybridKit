@@ -1,11 +1,12 @@
+platform :ios, "8.0"
 use_frameworks!
 
+
 target 'HybridKit_Example' do
-  pod 'HybridKit', :path => '../'
+    pod 'HybridKit', :path => '../'
+    pod 'WebViewJavascriptBridge', '~> 6.0.3'
 
-  target 'HybridKit_Tests' do
-    inherit! :search_paths
-
-    
-  end
+    target 'HybridKit_Tests' do
+        inherit! :search_paths
+    end
 end

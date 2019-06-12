@@ -7,17 +7,23 @@
 //
 
 import UIKit
+import HybridKit
+
+class Plugin4User: JSBridgePlugin {
+    var name: JSBridgePlugin.APIName = "user"
+
+    func handle(params: JSBridgePlugin.APIParam?) -> Any? {
+        print("handle js api: user")
+        return nil
+    }
+}
 
 class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
-    }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+        JSBridgeEngine.default.register(plugin: Plugin4User())
     }
 
 }

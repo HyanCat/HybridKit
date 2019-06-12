@@ -1,0 +1,11 @@
+use_frameworks!
+
+target 'HybridKit_Example' do
+  pod 'HybridKit', :path => '../'
+
+  target 'HybridKit_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end

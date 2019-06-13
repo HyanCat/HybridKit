@@ -19,14 +19,33 @@ open class HybridViewController: UIViewController, UIScrollViewDelegate, WKUIDel
     private var currentURL: URL? = nil
 
     let webView: WKWebView = WKWebView(frame: .zero)
+
     let navigationBar: UINavigationBar = UINavigationBar()
 
     private lazy var jsBridgeContainer: JSBridgeContainer = {
         JSBridgeContainer(webView: webView)
     }()
 
+    private var navigationBarHeightConstraint: NSLayoutConstraint?
+
     override open func viewDidLoad() {
         super.viewDidLoad()
+
+        self.view.addSubview(navigationBar)
+        let navigationItem = UINavigationItem()
+        navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(named: "rg_navigation_back"), style: .plain, target: self, action: #selector(navigationLeftButtonToueched))
+        navigationBar.items = [navigationItem]
+        navigationBar.translatesAutoresizingMaskIntoConstraints = false
+        navigationBar.delegate = self
+        if #available(iOS 9.0, *) {
+            navigationBar.leadingAnchor.constraint(equalTo: self.view.leadingAnchor).isActive = true
+            navigationBar.trailingAnchor.constraint(equalTo: self.view.trailingAnchor).isActive = true
+            if #available(iOS 11, *) {
+                navigationBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+            } else {
+                navigationBar.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+            }
+        }
 
         webView.frame = self.view.bounds
         webView.allowsBackForwardNavigationGestures = true
@@ -41,6 +60,8 @@ open class HybridViewController: UIViewController, UIScrollViewDelegate, WKUIDel
         webView.uiDelegate = self
         webView.navigationDelegate = self
 
+        self.view.bringSubviewToFront(navigationBar)
+
         loadWeb()
 
         jsBridgeContainer.boot()
@@ -52,6 +73,11 @@ open class HybridViewController: UIViewController, UIScrollViewDelegate, WKUIDel
         }
         let request = URLRequest(url: url)
         webView.load(request)
+    }
+
+    @objc
+    private func navigationLeftButtonToueched() {
+
     }
 
     // MARK: - WKWebView Delegates
@@ -72,3 +98,8 @@ open class HybridViewController: UIViewController, UIScrollViewDelegate, WKUIDel
     }
 }
 
+extension HybridViewController: UINavigationBarDelegate {
+    public func position(for bar: UIBarPositioning) -> UIBarPosition {
+        return .topAttached
+    }
+}

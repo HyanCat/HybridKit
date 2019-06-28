@@ -18,9 +18,9 @@ open class HybridViewController: UIViewController, UIScrollViewDelegate, WKUIDel
 
     private var currentURL: URL? = nil
 
-    let webView: WKWebView = WKWebView(frame: .zero)
+    public let webView: WKWebView = WKWebView(frame: .zero)
 
-    let navigationBar: UINavigationBar = UINavigationBar()
+    public let navigationBar: UINavigationBar = UINavigationBar()
 
     private lazy var jsBridgeContainer: JSBridgeContainer = {
         JSBridgeContainer(webView: webView)
@@ -33,7 +33,7 @@ open class HybridViewController: UIViewController, UIScrollViewDelegate, WKUIDel
 
         self.view.addSubview(navigationBar)
         let navigationItem = UINavigationItem()
-        navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(named: "rg_navigation_back"), style: .plain, target: self, action: #selector(navigationLeftButtonToueched))
+        navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(named: "hybrid_navigation_back"), style: .plain, target: self, action: #selector(navigationLeftButtonToueched))
         navigationBar.items = [navigationItem]
         navigationBar.translatesAutoresizingMaskIntoConstraints = false
         navigationBar.delegate = self

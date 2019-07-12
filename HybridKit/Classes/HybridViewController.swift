@@ -8,22 +8,35 @@
 import UIKit
 import WebKit
 
-open class HybridViewController: UIViewController, UIScrollViewDelegate, WKUIDelegate, WKNavigationDelegate {
+extension WKProcessPool {
+    static var sharedHybridProcessPool = WKProcessPool()
+}
+
+open class HybridViewController: UIViewController, UIScrollViewDelegate, WKNavigationDelegate {
 
     open var url: URL? {
         return nil
     }
 
-    open var preferWebTitle: Bool = true
+    open var options: HybridOptions {
+        return HybridOptions()
+    }
 
     private var currentURL: URL? = nil
 
-    public let webView: WKWebView = WKWebView(frame: .zero)
+    private let webviewConfiguration = WKWebViewConfiguration()
+
+    public lazy var webView: WKWebView = {
+        webviewConfiguration.processPool = WKProcessPool.sharedHybridProcessPool
+        return WKWebView(frame: .zero, configuration: webviewConfiguration)
+    }()
 
     public let navigationBar: UINavigationBar = UINavigationBar()
 
     private lazy var jsBridgeContainer: JSBridgeContainer = {
-        JSBridgeContainer(webView: webView)
+        let container = JSBridgeContainer(webView: webView)
+        container.jsBridge.setWebViewDelegate(self)
+        return container
     }()
 
     private var navigationBarHeightConstraint: NSLayoutConstraint?
@@ -31,20 +44,14 @@ open class HybridViewController: UIViewController, UIScrollViewDelegate, WKUIDel
     override open func viewDidLoad() {
         super.viewDidLoad()
 
-        self.view.addSubview(navigationBar)
-        let navigationItem = UINavigationItem()
-        navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(named: "hybrid_navigation_back"), style: .plain, target: self, action: #selector(navigationLeftButtonToueched))
-        navigationBar.items = [navigationItem]
-        navigationBar.translatesAutoresizingMaskIntoConstraints = false
-        navigationBar.delegate = self
-        if #available(iOS 9.0, *) {
-            navigationBar.leadingAnchor.constraint(equalTo: self.view.leadingAnchor).isActive = true
-            navigationBar.trailingAnchor.constraint(equalTo: self.view.trailingAnchor).isActive = true
-            if #available(iOS 11, *) {
-                navigationBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
-            } else {
-                navigationBar.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-            }
+        if let url = Bundle(for: HybridViewController.self).url(forResource: "HybridKit", withExtension: "bundle") {
+            let assetBundle = Bundle(url: url)
+            let image = UIImage(named: "hybrid_navigation_back", in: assetBundle, compatibleWith: nil)
+            self.navigationItem.leftBarButtonItem =
+                UIBarButtonItem(image: image,
+                                style: .plain,
+                                target: self,
+                                action: #selector(navigationLeftButtonToueched(_:)))
         }
 
         webView.frame = self.view.bounds
@@ -54,11 +61,6 @@ open class HybridViewController: UIViewController, UIScrollViewDelegate, WKUIDel
         webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         self.view.addSubview(webView)
         webView.scrollView.delegate = self
-        if #available(iOS 11.0, *) {
-            webView.scrollView.contentInsetAdjustmentBehavior = .never
-        }
-        webView.uiDelegate = self
-        webView.navigationDelegate = self
 
         self.view.bringSubviewToFront(navigationBar)
 
@@ -73,23 +75,39 @@ open class HybridViewController: UIViewController, UIScrollViewDelegate, WKUIDel
         }
         let request = URLRequest(url: url)
         webView.load(request)
+        options.loading?.startLoding(on: self)
     }
 
     @objc
-    private func navigationLeftButtonToueched() {
-
+    private func navigationLeftButtonToueched(_ sender: Any) {
+        self.navigationController?.popViewController(animated: true)
     }
 
     // MARK: - WKWebView Delegates
 
+    public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        decisionHandler(.allow)
+    }
+
+    public func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+        decisionHandler(.allow)
+    }
+
+    public func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+        //
+    }
+
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        if preferWebTitle {
+        if options.preferWebTitle {
             self.title = webView.title
         }
+        options.loading?.endLoading(on: self, succeed: true)
         print("Hybrid: finished")
     }
 
     public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        options.loading?.endLoading(on: self, succeed: false)
+        options.errorView?.show(on: self, with: error)
         print("Hybrid: failed")
     }
 

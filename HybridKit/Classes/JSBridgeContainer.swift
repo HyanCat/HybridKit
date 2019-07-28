@@ -25,7 +25,7 @@ class JSBridgeContainer {
     func boot() {
         JSBridgeEngine.default.plugins.forEach { plugin in
             self.jsBridge.registerHandler(plugin.name, handler: { (data, callback) in
-                let params: JSBridgePlugin.APIParam? = data as? JSBridgePlugin.APIParam
+                let params = data as? JSBridgePlugin.Param
                 let result = plugin.handle(params: params)
                 callback?(result)
             })

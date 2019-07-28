@@ -8,9 +8,9 @@
 import Foundation
 
 public protocol JSBridgePlugin {
-    typealias APIName = String
-    typealias APIParam = [String: String]
+    typealias Name = String
+    typealias Param = [String: Any]
 
-    var name: APIName { get set }
-    func handle(params: APIParam?) -> Any?
+    var name: Name { get set }
+    func handle(params: Param?) -> Any?
 }
